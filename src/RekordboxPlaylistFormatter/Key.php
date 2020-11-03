@@ -13,12 +13,14 @@ class Key
     private const MINOR = 0;
     private const MAJOR = 1;
 
+    // numeric representations of string formatting options
     public const FORMAT_RELATIVE_FULLTEXT = 0;
     public const FORMAT_RELATIVE_SHORT = 1;
     public const FORMAT_ACCIDENTAL_FULLTEXT = 3;
     public const FORMAT_ACCIDENTAL_SHORT = 4;
     public const FORMAT_ACCIDENTAL_UNICODE = 5;
 
+    // Formatting options for key relative (major/minor)
     private static $relative = [
         self::MINOR => [
             self::FORMAT_RELATIVE_FULLTEXT => "Minor",
@@ -30,6 +32,7 @@ class Key
         ],
     ];
 
+    // Formatting options for key accidental (natural/sharp/flat)
     private static $accidental = [
         self::NATURAL => [
             self::FORMAT_ACCIDENTAL_FULLTEXT => '',
@@ -48,7 +51,7 @@ class Key
         ],
     ];
 
-    // TODO match notation to Rekordbox key notation
+    // TODO add/confirm notation to Rekordbox key notation
     private static $conversions = [
         'a20' => '1a',
         'b01' => '1b',
@@ -76,10 +79,15 @@ class Key
         'e01' => '12b',
     ];
 
-    private $key = null;
-    private $relativeFormat = self::FORMAT_RELATIVE_FULLTEXT;
-    private $accidentalFormat = self::FORMAT_ACCIDENTAL_UNICODE;
+    private $key = null; // the stored key in <pitch><accidental><relative> format
+    private $relativeFormat = self::FORMAT_RELATIVE_FULLTEXT;   // string format for relative output
+    private $accidentalFormat = self::FORMAT_ACCIDENTAL_UNICODE;// string format for accidental output
 
+    /**
+     * @param string $key 
+     * @param null|array $options 
+     * @return $this 
+     */
     private function __construct(string $key, ?array $options)
     {
         if (!empty($options)) {
@@ -92,7 +100,7 @@ class Key
     }
 
     /**
-     * Creates a new instance of Key from an arbitrary string
+     * Creates a new instance of Key from an arbitrary key string
      * @param string $key
      * @param null|array $options
      * @return Key|void
@@ -134,6 +142,14 @@ class Key
         throw new Exceptions\InvalidFormatException("Unable to parse string '{$key}':{$parsedKey}");
     }
 
+    /**
+     *  Checks if two given keys (in Camelot format) are harmonically 
+     *  compatible. Returns (boolean) true or false.
+     * 
+     * @param string $a 
+     * @param string $b 
+     * @return bool 
+     */
     public static function isCamelotMatch(string $a, string $b)
     {
         $splitA = self::splitCamelotKey($a);
@@ -150,6 +166,12 @@ class Key
         return true;
     }
 
+    /**
+     * Converts a known keyword to an integer value corresponding to a class constant
+     * 
+     * @param string $string 
+     * @return string|int 
+     */
     private static function keywordAsInt(string $string)
     {
 
@@ -168,12 +190,10 @@ class Key
                 return self::SHARP;
                 break;
             case 'major':
-            case 'maj.':
             case 'maj':
                 return self::MAJOR;
                 break;
             case 'minor':
-            case 'min.':
             case 'min':
                 return self::MINOR;
                 break;
@@ -183,11 +203,21 @@ class Key
         }
     }
 
+    /** 
+     *  Returns the key in Camelot notation
+     * 
+     * @return string  
+     * */
     public function toCamelot()
     {
         return strtoupper(self::$conversions[$this->key]);
     }
 
+    /** 
+     * Returns a text representation of the string
+     * 
+     * @return string  
+     * */
     public function toString()
     {
         $pitch = strtoupper(substr($this->key, 0, 1));
@@ -201,7 +231,8 @@ class Key
     }
 
     /**
-     * Set the formatting options.
+     * Set the formatting options for self::toString()
+     * 
      * @param array $options
      * @return void
      */
@@ -228,6 +259,12 @@ class Key
         }
     }
 
+    /**
+     * Splits a Camelot key string into alpha and numerical components
+     * 
+     * @param string $key 
+     * @return (string|string[]|false)[] 
+     */
     private static function splitCamelotKey(string $key)
     {
         $alpha = substr($key, -1); // split alpha component
@@ -235,6 +272,12 @@ class Key
         return [$num, $alpha];
     }
 
+    /**
+     * Checks if a given string is in valid Camelot key notation
+     * 
+     * @param string $key 
+     * @return bool 
+     */
     public static function isCamelotKey(string $key)
     {
 

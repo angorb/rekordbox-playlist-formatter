@@ -1,0 +1,9 @@
+{
+    "name": "oxcrime/rekordbox-playlist-formatter",
+    "type": "project",
+    "autoload":{
+        "psr-4": {
+            "Oxcrime\\RekordboxPlaylistFormatter\\" : "src/RekordboxPlaylistFormatter/"
+        }
+    }
+}

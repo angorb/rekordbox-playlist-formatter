@@ -10,6 +10,10 @@ class Playlist
     private $columns;
     private $tracklist;
 
+    /**
+     * @param string $filename 
+     * @return $this 
+     */
     public function __construct(string $filename)
     {
         $inFile = fopen($filename, 'r') or die('no file');
@@ -50,11 +54,22 @@ class Playlist
         return $this;
     }
 
+    /** 
+     * Returns the number of tracks in the playlist
+     * 
+     * @return int  
+     * */
     public function getTrackCount()
     {
         return count($this->tracklist);
     }
 
+    /**
+     * Returns track information for the playlist
+     * 
+     * @param null|array $columns 
+     * @return array 
+     */
     public function getTracklist(?array $columns = null)
     {
         $tracklist = $this->tracklist;
@@ -64,11 +79,22 @@ class Playlist
         return $tracklist;
     }
 
+    /** 
+     * Returns a list of data columns available in the Playlist
+     * 
+     * @return array|null 
+     * */
     public function getColumns()
     {
         return $this->columns;
     }
 
+    /** 
+     * Returns an associative array (hours, minutes, seconds) containing the sum of
+     * the length of the tracks in the Playlist
+     * 
+     * @return (string|int)[]  
+     * */
     public function getTime()
     {
 
@@ -100,6 +126,11 @@ class Playlist
         ];
     }
 
+    /** 
+     * Returns the average tempo (BPM) of the tracks in the playlist
+     * 
+     * @return int|float  
+     * */
     public function getAverageBpm()
     {
         $this->assertColumnExists(Column::BPM);
@@ -107,6 +138,11 @@ class Playlist
         return array_sum($bpm) / count($bpm);
     }
 
+    /** 
+     * Returns an array of genre statistics for the Playlist
+     * (genre name, # of tracks, % of total)
+     * 
+     * @return array  */
     public function getGenres()
     {
         $this->assertColumnExists(Column::GENRE);
@@ -132,16 +168,57 @@ class Playlist
         return $genres;
     }
 
+
+    /**
+     * Asserts that a specified column is available for the track data in the Playlist
+     * 
+     * @param string $columnName 
+     * @return void 
+     */
     private function assertColumnExists(string $columnName)
     {
         assert(in_array($columnName, $this->columns), "Check for required column '{$columnName}'");
     }
 
+    /**
+     * Returns the parsed tracklist as JSON. If $download is indicated, 
+     * force a download of the file via HTTP header content-type
+     * 
+     * @param bool $download 
+     * @return string|false 
+     */
+    public function getJson(bool $download)
+    {
+        $json = json_encode($this->tracklist, JSON_PRETTY_PRINT);
+
+        if($download){
+            header('Content-disposition: attachment; filename=file.json');
+            header('Content-type: application/json');
+            echo $json;
+        }
+
+        return $json;
+    }
+    
+    /**
+     * Removes invalid characters (non-ascii, invisibles) from the strings read from the input file
+     * 
+     * @param string $string 
+     * @param mixed $key 
+     * @return void 
+     */
     private function stripInvalidCharacters(string &$string, $key)
     {
         $string = preg_replace('/[\x00-\x1F\x7F\xFF\xFE]/', '', $string);
     }
 
+    
+    /**
+     * Removes all columns not specified in $columns from the track data array 
+     * 
+     * @param array $columns 
+     * @return array 
+     */
     private function limitRecordset(array $columns)
     {
         $recordset = [];
